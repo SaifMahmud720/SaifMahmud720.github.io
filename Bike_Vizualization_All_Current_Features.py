@@ -28,23 +28,39 @@ column_types = {
     'participant': str
 }
 
-input_dir = Path.cwd() / "input"
+# Dynamically resolve root directory relative to this script file
+script_dir = Path(__file__).resolve().parent
 
 # ==============================================================================
 # DATA IMPORT & CLEANING
 # ==============================================================================
 
-# Read main telemetry dataset with specific column types
-df = pd.read_csv(
-    input_dir / 'Slickrock_6-23-26.csv', 
-    usecols=columns_to_keep,
-    dtype=column_types
-)
+# Locate single Slickrock Route 4 CSV file
+route_file = script_dir / 'Slickrock_Route_4.csv'
+
+if not route_file.exists():
+    raise FileNotFoundError(
+        f"Could not find 'Slickrock_Route_4.csv' in directory:\n{script_dir}"
+    )
+
+# Read route 4 dataset with UTF-8 encoding
+df = pd.read_csv(route_file, usecols=columns_to_keep, dtype=column_types, encoding='utf-8-sig')
+
+# Locate elevation file in main folder or fallback to 'input' subfolder
+elevation_file = script_dir / 'slick_rock_elevations.csv'
+if not elevation_file.exists():
+    elevation_file = script_dir / 'input' / 'slick_rock_elevations.csv'
+
+if not elevation_file.exists():
+    raise FileNotFoundError(
+        f"Could not find 'slick_rock_elevations.csv' in repository directory or 'input' subfolder:\n{script_dir}"
+    )
 
 # Load elevation data and standardize column names
 raw_alt_df = pd.read_csv(
-    input_dir / 'slick_rock_elevations.csv',
-    usecols=['MEASURE', 'ELEV']
+    elevation_file,
+    usecols=['MEASURE', 'ELEV'],
+    encoding='utf-8-sig'
 ).rename(columns={'MEASURE': 'measure', 'ELEV': 'elev'})
 
 # Clean elevation data: convert to numeric, drop NaNs, drop duplicate distance measures, and sort sequentially
@@ -146,7 +162,7 @@ route_options = sorted(list(df['route_id'].unique()))
 all_categories = sorted(list(df['category'].dropna().unique()))
 
 # Primary Filter Controls
-route_dropdown = pn.widgets.Select(name="Select Route ID", options=route_options, value=route_options[0] if route_options else '1')
+route_dropdown = pn.widgets.Select(name="Select Route ID", options=route_options, value=route_options[0] if route_options else '4')
 bike_dropdown = pn.widgets.Select(name='Filter Bike Type', options=['Both Bike Types', 'Conventional MTB Only', 'Electric eMTB Only'], value='Both Bike Types')
 measure_slider = pn.widgets.RangeSlider(name='Measure Range Along Track', start=0.0, end=100.0, value=(0.0, 100.0), step=1.0)
 reset_range_btn = pn.widgets.Button(name='Reset Measure Range', button_type='default')
