@@ -4,7 +4,6 @@ import panel as pn
 import holoviews as hv
 import numpy as np
 from bokeh.models import LinearAxis, Range1d, BoxZoomTool
-from pathlib import Path
 
 # Initialize Panel extension for HoloViews/Bokeh rendering
 pn.extension()
@@ -28,33 +27,16 @@ column_types = {
     'participant': str
 }
 
-# Dynamically resolve root directory relative to this script file
-script_dir = Path(__file__).resolve().parent
+# Relative file path definitions for WebAssembly / GitHub Pages environment
+route_file = 'Slickrock_Route_4.csv'
+elevation_file = 'slick_rock_elevations.csv'
 
 # ==============================================================================
 # DATA IMPORT & CLEANING
 # ==============================================================================
 
-# Locate single Slickrock Route 4 CSV file
-route_file = script_dir / 'Slickrock_Route_4.csv'
-
-if not route_file.exists():
-    raise FileNotFoundError(
-        f"Could not find 'Slickrock_Route_4.csv' in directory:\n{script_dir}"
-    )
-
 # Read route 4 dataset with UTF-8 encoding
 df = pd.read_csv(route_file, usecols=columns_to_keep, dtype=column_types, encoding='utf-8-sig')
-
-# Locate elevation file in main folder or fallback to 'input' subfolder
-elevation_file = script_dir / 'slick_rock_elevations.csv'
-if not elevation_file.exists():
-    elevation_file = script_dir / 'input' / 'slick_rock_elevations.csv'
-
-if not elevation_file.exists():
-    raise FileNotFoundError(
-        f"Could not find 'slick_rock_elevations.csv' in repository directory or 'input' subfolder:\n{script_dir}"
-    )
 
 # Load elevation data and standardize column names
 raw_alt_df = pd.read_csv(
@@ -703,14 +685,14 @@ def reactive_layout_manager(fullscreen_active):
     """
     if fullscreen_active:
         return pn.Column(
-            pn.pane.Markdown("### 🗺️ Slickrock Trail Geographic View (Fullscreen Mode)"),
+            pn.pane.Markdown("### Slickrock Trail Geographic View (Fullscreen Mode)"),
             composite_map_view,
             sizing_mode='stretch_both'
         )
     return pn.Row(
         update_analysis_callback,
         pn.Column(
-            pn.pane.Markdown("### 🗺️ Slickrock Trail Map"),
+            pn.pane.Markdown("### Slickrock Trail Map"),
             composite_map_view
         )
     )
@@ -746,5 +728,5 @@ dashboard = pn.template.FastListTemplate(
     main=[reactive_layout_manager]
 )
 
-# Launch the interactive server dashboard application
-dashboard.show()
+# Mark dashboard as servable for WebAssembly build
+dashboard.servable()
