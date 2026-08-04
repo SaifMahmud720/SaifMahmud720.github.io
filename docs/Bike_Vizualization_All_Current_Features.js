@@ -26,7 +26,7 @@ async function startApplication() {
   try {
     await self.pyodide.runPythonAsync(`
       import micropip
-      await micropip.install(['https://cdn.holoviz.org/panel/wheels/bokeh-3.9.1-py3-none-any.whl', 'https://cdn.holoviz.org/panel/1.9.3/dist/wheels/panel-1.9.3-py3-none-any.whl', 'pyodide-http', 'pandas']);
+      await micropip.install(['https://cdn.holoviz.org/panel/wheels/bokeh-3.9.1-py3-none-any.whl', 'https://cdn.holoviz.org/panel/1.9.3/dist/wheels/panel-1.9.3-py3-none-any.whl', 'pyodide-http', 'pandas', 'panel]);
     `);
   } catch(e) {
     console.log(e)
